@@ -478,11 +478,10 @@ static int pmw3610_report_data(const struct device *dev) {
 #endif
 
 #if CONFIG_PMW3610_ALT_REPORT_INTERVAL_MIN > 0
-    // purge accumulated delta, if last sampled had not been reported on last report tick
-    if (now - data->last_smp_time >= CONFIG_PMW3610_ALT_REPORT_INTERVAL_MIN) {
-        data->dx = 0;
-        data->dy = 0;
-    }
+    // Keep any delta that was held back by the report interval and send it
+    // with this sample. Purging it here dropped motion whenever samples were
+    // more than one interval apart, i.e. during slow, fine ball movement,
+    // which made the ball feel sluggish.
     data->last_smp_time = now;
 #endif
 

@@ -7,6 +7,7 @@
 #define DT_DRV_COMPAT pixart_pmw3610_alt
 
 #include <zephyr/kernel.h>
+#include <stdlib.h>
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/input/input.h>
 #include <zephyr/pm/device.h>
@@ -462,8 +463,29 @@ static int pmw3610_report_data(const struct device *dev) {
 
     int16_t x = TOINT16((buf[PMW3610_X_L_POS] + ((buf[PMW3610_XY_H_POS] & 0xF0) << 4)), 12);
     int16_t y = TOINT16((buf[PMW3610_Y_L_POS] + ((buf[PMW3610_XY_H_POS] & 0x0F) << 8)), 12);
-    LOG_DBG("x/y: %d/%d squal: %u shutter: %u", x, y, buf[4],
-            (((uint16_t)(buf[PMW3610_SHUTTER_H_POS] & 0x01)) << 8) | buf[PMW3610_SHUTTER_L_POS]);
+#if IS_ENABLED(CONFIG_ZMK_USB_LOGGING)
+    /* DEBUG: one summary line every 200 ms of motion instead of per sample,
+     * to keep log volume low. */
+    {
+        static int32_t sum_x, sum_y, abs_x, abs_y;
+        static uint32_t n, squal_sum, squal_min = 255, shutter_sum;
+        static int64_t win_start;
+        uint8_t squal = buf[4];
+        uint16_t shutter = (((uint16_t)(buf[PMW3610_SHUTTER_H_POS] & 0x01)) << 8) |
+                           buf[PMW3610_SHUTTER_L_POS];
+        int64_t t = k_uptime_get();
+        if (n == 0) win_start = t;
+        sum_x += x; sum_y += y; abs_x += abs(x); abs_y += abs(y);
+        squal_sum += squal; shutter_sum += shutter; n++;
+        if (squal < squal_min) squal_min = squal;
+        if (t - win_start >= 200) {
+            LOG_INF("n=%u dx=%d dy=%d |dx|=%d |dy|=%d squal avg=%u min=%u shutter avg=%u",
+                    n, sum_x, sum_y, abs_x, abs_y, squal_sum / n, squal_min, shutter_sum / n);
+            sum_x = sum_y = abs_x = abs_y = 0;
+            n = squal_sum = shutter_sum = 0; squal_min = 255;
+        }
+    }
+#endif
 
 #ifdef CONFIG_PMW3610_ALT_SMART_ALGORITHM
     int16_t shutter = ((int16_t)(buf[PMW3610_SHUTTER_H_POS] & 0x01) << 8) 

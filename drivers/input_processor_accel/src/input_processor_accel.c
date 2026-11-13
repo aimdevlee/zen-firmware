@@ -42,9 +42,12 @@ struct accel_config {
 };
 
 struct accel_data {
-    int64_t last_time_ms[ACCEL_MAX_CODES];  /* per-axis timestamp */
-    int32_t last_phys[ACCEL_MAX_CODES];     /* last raw delta per axis */
     int16_t remainders[ACCEL_MAX_CODES];    /* thousandths remainder per axis */
+    int64_t last_frame_ms;                  /* time of the last completed frame */
+    uint64_t frame_sum_sq;                  /* sum of squared raw deltas in the open frame */
+    uint32_t speed_cps;                     /* combined speed of the last frame */
+    uint32_t frame_factor;                  /* factor applied to every axis this frame */
+    bool frame_open;
 };
 
 static inline uint32_t clamp_u32(uint32_t v, uint32_t lo, uint32_t hi) {
@@ -100,6 +103,26 @@ static uint32_t compute_factor_scaled(const struct accel_config *cfg, uint32_t c
     }
 }
 
+static uint32_t isqrt_u64(uint64_t v) {
+    uint64_t r = 0, bit = 1ULL << 62;
+    while (bit > v) bit >>= 2;
+    while (bit) {
+        if (v >= r + bit) { v -= r + bit; r = (r >> 1) + bit; }
+        else { r >>= 1; }
+        bit >>= 2;
+    }
+    return (uint32_t)r;
+}
+
+/*
+ * ZEN change: speed is measured on the combined X/Y motion of each report
+ * frame (events up to one with sync set), and one factor is applied to both
+ * axes. Upstream measured each axis on its own, so during diagonal moves the
+ * dominant axis was accelerated more than the minor one and the pointer bent
+ * toward horizontal or vertical. The factor for a frame comes from the speed
+ * of the previous frame, because the X event is processed before the Y event
+ * of the same frame arrives.
+ */
 static int accel_handle_event(const struct device *dev, struct input_event *event,
                               uint32_t param1, uint32_t param2,
                               struct zmk_input_processor_state *state) {
@@ -122,40 +145,44 @@ static int accel_handle_event(const struct device *dev, struct input_event *even
     const int32_t raw = event->value;
     const int64_t now = k_uptime_get();
 
-    if (raw == 0) {
-        data->last_time_ms[idx] = now;
-        return 0;
+    if (!data->frame_open) {
+        /* Motion stopped for a while: start again from the slowest factor. */
+        if (data->last_frame_ms == 0 || now - data->last_frame_ms > 100) {
+            data->speed_cps = 0;
+        }
+        data->frame_factor = compute_factor_scaled(cfg, data->speed_cps);
+        data->frame_sum_sq = 0;
+        data->frame_open = true;
     }
 
-    uint32_t dt_ms = 1;
-    if (data->last_time_ms[idx] > 0 && now > data->last_time_ms[idx]) {
-        int64_t diff = now - data->last_time_ms[idx];
-        if (diff > 100) diff = 100;        
-        dt_ms = (uint32_t)diff;
+    const uint32_t factor = data->frame_factor;
+    data->frame_sum_sq += (uint64_t)((int64_t)raw * (int64_t)raw);
+
+    if (raw != 0) {
+        if (cfg->track_remainders) {
+            int64_t total = (int64_t)raw * (int64_t)factor + (int64_t)data->remainders[idx];
+            int32_t out = (int32_t)(total / SCALE);
+            int32_t rem = (int32_t)(total - (int64_t)out * SCALE);  /* [-999..999] */
+            if (out > 32767) out = 32767;
+            if (out < -32768) out = -32768;
+            event->value = out;
+            data->remainders[idx] = (int16_t)rem;
+        } else {
+            event->value = (int32_t)(((int64_t)raw * (int64_t)factor) / SCALE);
+        }
     }
 
-    uint32_t cps = (uint32_t)(( (uint64_t)abs(raw) * 1000ULL ) / dt_ms);
-
-    uint32_t factor = compute_factor_scaled(cfg, cps);
-
-    if ((int64_t)data->last_phys[idx] * (int64_t)raw < 0 && factor > 1000) {
-        factor = 1000;
+    if (event->sync) {
+        uint32_t dt_ms = 100;
+        if (data->last_frame_ms > 0 && now > data->last_frame_ms) {
+            int64_t diff = now - data->last_frame_ms;
+            dt_ms = (uint32_t)(diff > 100 ? 100 : diff);
+        }
+        data->speed_cps = (uint32_t)(((uint64_t)isqrt_u64(data->frame_sum_sq) * 1000ULL) / dt_ms);
+        data->last_frame_ms = now;
+        data->frame_open = false;
     }
 
-    if (cfg->track_remainders) {
-        int64_t total = (int64_t)raw * (int64_t)factor + (int64_t)data->remainders[idx];
-        int32_t out = (int32_t)(total / SCALE);
-        int32_t rem = (int32_t)(total - (int64_t)out * SCALE);  /* [-999..999] */
-        if (out > 32767) out = 32767;
-        if (out < -32768) out = -32768;
-        event->value = out;
-        data->remainders[idx] = (int16_t)rem;
-    } else {
-        event->value = (int32_t)(((int64_t)raw * (int64_t)factor) / SCALE);
-    }
-
-    data->last_phys[idx] = raw;
-    data->last_time_ms[idx] = now;
     return 0;
 }
 

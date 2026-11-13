@@ -36,6 +36,7 @@
 &pointing_listener {
     input-processors =
         <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP)>,
+        <&zip_y_scaler 4 3>,  /* vertical feels weaker than horizontal: boost Y by 1.33x */
         <&zip_temp_layer 1 500>;
 
     scroller {

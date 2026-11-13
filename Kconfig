@@ -112,15 +112,6 @@ source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
 
 endif #PMW3610_ALT
 
-config ZMK_INPUT_PROCESSOR_ACCELERATION
-    bool "Velocity-based pointer acceleration input processor"
-    default y
-    depends on DT_HAS_ZMK_INPUT_PROCESSOR_ACCELERATION_ENABLED
-    depends on ZMK_POINTING
-    help
-      Vendored from oleksandrmaslov/zmk-pointing-acceleration. Scales
-      relative pointer movement by a factor that grows with speed.
-
 menuconfig IQS7211E
     bool "IQS7211E capcacitive touch sensor"
     select I2C

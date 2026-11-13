@@ -1,5 +1,21 @@
 
 #include <dt-bindings/zmk/input_transform.h>
+#include <input/processors.dtsi>
+#include <behaviors/input_gestures_accel.dtsi>
+
+/* Pointer acceleration: 1x below ~1000 counts/s (slow, precise moves),
+ * ramping up to 2.5x at 5000 counts/s (fast flicks across the screen).
+ * Counts are at the sensor CPI set below.
+ */
+&pointer_accel {
+    input-type = <INPUT_EV_REL>;
+    track-remainders;
+    min-factor = <1000>;
+    max-factor = <2500>;
+    speed-threshold = <1000>;
+    speed-max = <5000>;
+    acceleration-exponent = <2>;
+};
 
 / {
     pmw3610_scroll_scaler: pmw3610_scroll_scaler {
@@ -35,6 +51,7 @@
 
 &pointing_listener {
     input-processors =
+        <&pointer_accel>,
         <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP)>,
         <&zip_y_scaler 4 3>,  /* vertical feels weaker than horizontal: boost Y by 1.33x */
         <&zip_temp_layer 1 500>;

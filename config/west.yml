@@ -17,8 +17,6 @@ manifest:
       url-base: https://github.com/kumamuk-git
     - name: badjeff
       url-base: https://github.com/badjeff
-    - name: oleksandrmaslov
-      url-base: https://github.com/oleksandrmaslov
   projects:
     - name: zmk
       remote: e24-gh
@@ -43,10 +41,5 @@ manifest:
     - name: zmk-scroll-snap
       remote: kot149
       revision: v1
-    # Pointer acceleration input processor, used by the PMW3610 trackball.
-    # Pinned to a commit because the repo has no release tags.
-    - name: zmk-pointing-acceleration
-      remote: oleksandrmaslov
-      revision: 0da8f97f8f2abb18fcc9d488b25357511922cf32
   self:
     path: config

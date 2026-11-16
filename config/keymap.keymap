@@ -18,7 +18,7 @@
     keymap {
         compatible = "zmk,keymap";
 
-        layer_0 {
+        Base {
             bindings = <
 &kp TAB        &kp Q  &kp W             &kp E     &kp R             &kp T      &kp Y      &kp U      &kp I           &kp O           &kp P          &kp BSPC
 &mt RCTRL ESC  &kp A  &kp S             &kp D     &kp F             &kp G      &kp H      &kp J      &kp K           &kp L           &kp SEMICOLON  &kp ENTER
@@ -27,7 +27,7 @@
             >;
         };
 
-        layer_1 {
+        Mouse {
             bindings = <
 &trans  &trans  &trans  &trans  &trans  &trans  &trans                &mkp LCLK  &mo 4             &mkp RCLK  &trans                 &trans
 &trans  &trans  &trans  &trans  &trans  &trans  &kp RG(LEFT_BRACKET)  &mkp MB1   &mkp MB3          &mkp MB2   &kp RG(RIGHT_BRACKET)  &trans
@@ -36,21 +36,21 @@
             >;
         };
 
-        layer_2 {
+        Num,Sym {
             bindings = <
-&kp GRAVE  &kp N1    &kp N2  &kp N3    &kp N4      &kp N5     &kp N6     &kp N7         &kp N8     &kp N9                &kp N0                 &mt EQUAL MINUS
-&kp TILDE  &kp EXCL  &kp AT  &kp HASH  &kp DOLLAR  &kp PRCNT  &kp CARET  &kp AMPERSAND  &kp ASTRK  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &trans
-&trans     &trans    &trans  &trans    &trans      &trans     &trans     &trans         &trans     &kp LEFT_BRACE        &kp RIGHT_BRACE        &kp LEFT_BRACKET  &kp RIGHT_BRACKET  &trans
-&trans     &trans    &trans  &trans    &trans      &trans     &trans     &trans         &trans     &trans                &trans                 &trans
+&kp GRAVE  &mt F1 N1  &mt F2 N2  &mt F3 N3  &mt F4 N4   &mt F5 N5  &mt F6 N6  &mt F7 N7      &mt F8 N8  &mt F9 N9             &mt F10 N0             &mt EQUAL MINUS
+&kp TILDE  &kp EXCL   &kp AT     &kp HASH   &kp DOLLAR  &kp PRCNT  &kp CARET  &kp AMPERSAND  &kp ASTRK  &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS  &trans
+&trans     &trans     &trans     &trans     &trans      &trans     &trans     &trans         &trans     &kp LEFT_BRACE        &kp RIGHT_BRACE        &kp LEFT_BRACKET  &kp RIGHT_BRACKET  &trans
+&trans     &trans     &trans     &trans     &trans      &trans     &trans     &trans         &trans     &trans                &trans                 &trans
             >;
         };
 
-        layer_3 {
+        Media {
             bindings = <
-&trans        &kp F1         &kp F2                &kp F3        &kp F4             &kp F5           &kp F6  &kp F7  &kp F8  &kp F9  &kp F10  &trans
-&out OUT_USB  &kp C_BRI_DEC  &kp C_BRIGHTNESS_INC  &kp C_MUTE    &kp C_VOLUME_DOWN  &kp C_VOLUME_UP  &trans  &trans  &trans  &trans  &trans   &trans
-&out OUT_BLE  &bt BT_SEL 0   &bt BT_SEL 1          &bt BT_SEL 2  &bt BT_SEL 3       &trans           &trans  &trans  &trans  &trans  &trans   &trans  &trans  &trans
-&trans        &bt BT_PRV     &bt BT_NXT            &bt BT_CLR    &bt BT_CLR_ALL     &trans           &trans  &trans  &trans  &trans  &trans   &trans
+&trans        &trans         &trans                &trans        &trans             &trans           &trans                &trans                &trans                    &trans                    &trans                    &trans
+&out OUT_USB  &kp C_BRI_DEC  &kp C_BRIGHTNESS_INC  &kp C_MUTE    &kp C_VOLUME_DOWN  &kp C_VOLUME_UP  &kp LS(LG(NUMBER_2))  &kp LS(LG(NUMBER_3))  &kp LS(LG(NUMBER_4))      &kp LS(LG(NUMBER_5))      &trans                    &trans
+&out OUT_BLE  &bt BT_SEL 0   &bt BT_SEL 1          &bt BT_SEL 2  &bt BT_SEL 3       &trans           &trans                &trans                &kp LS(LC(LG(NUMBER_2)))  &kp LS(LC(LG(NUMBER_3)))  &kp LS(LC(LG(NUMBER_4)))  &kp LS(LC(LG(NUMBER_5)))  &trans  &trans
+&trans        &bt BT_PRV     &bt BT_NXT            &bt BT_CLR    &bt BT_CLR_ALL     &trans           &trans                &trans                &trans                    &trans                    &trans                    &trans
             >;
         };
 
@@ -60,15 +60,6 @@
 &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans
 &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans
 &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans
-            >;
-        };
-
-        layer_5 {
-            bindings = <
-&kp ESC  &kp F1  &kp F2  &kp F3  &kp F4  &kp F5  &kp F6  &kp F7  &kp F8  &kp F9  &kp F10  &kp F12
-&trans   &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans   &trans
-&trans   &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans   &trans   &trans  &trans
-&trans   &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans  &trans   &trans
             >;
         };
 
@@ -82,12 +73,5 @@
         };
     };
 
-    conditional_layers {
-        compatible = "zmk,conditional-layers";
-
-        FunctionLayer {
-            if-layers = <2 3>;
-            then-layer = <5>;
-        };
-    };
+    conditional_layers { compatible = "zmk,conditional-layers"; };
 };

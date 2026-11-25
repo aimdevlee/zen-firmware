@@ -1,0 +1,3 @@
+name: zen-host-output-switch
+append:
+  EXTRA_DTC_OVERLAY_FILE: zen-host-output-switch.overlay

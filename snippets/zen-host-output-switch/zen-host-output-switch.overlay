@@ -1,0 +1,11 @@
+/*
+ * ZEN glue for the host-output-switch snippet from the zmk-gaze-switch module.
+ *
+ * That snippet adds a second CDC ACM port. Pin the bootloader trigger to the
+ * Studio port, so the 1200-baud reset keeps working on the port tools already
+ * use. List after studio-rpc-usb-uart and host-output-switch in build.yaml.
+ */
+
+&bootloader_trigger {
+    cdc-port = <&snippet_studio_rpc_usb_uart>;
+};

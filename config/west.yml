@@ -17,6 +17,8 @@ manifest:
       url-base: https://github.com/kumamuk-git
     - name: badjeff
       url-base: https://github.com/badjeff
+    - name: aimdevlee
+      url-base: https://github.com/aimdevlee
   projects:
     - name: zmk
       remote: e24-gh
@@ -41,5 +43,10 @@ manifest:
     - name: zmk-scroll-snap
       remote: kot149
       revision: v1
+    # Host-driven output switch (USB <-> BLE profile) for the central half,
+    # driven by the GazeSwitch Mac app in the same repository.
+    - name: zmk-gaze-switch
+      remote: aimdevlee
+      revision: v0.1.0
   self:
     path: config

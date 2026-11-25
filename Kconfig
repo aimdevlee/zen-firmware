@@ -196,19 +196,3 @@ config IQS7211E_SCROLLER_INERTIA_STOP_THRESHOLD_Q8
       Q8 means 256 equals 1 wheel unit per 10ms.
 
 endif
-
-config ZEN_HOST_OUTPUT_SWITCH
-    bool "Let the host switch the output (USB / BLE profile) over a USB serial port"
-    depends on ZMK_USB && ZMK_BLE
-    depends on UART_INTERRUPT_DRIVEN && UART_LINE_CTRL
-    select RING_BUFFER
-    help
-      Adds a line protocol on a second CDC ACM port (chosen node
-      zen,host-output-switch-uart):
-        U      select the USB output
-        B      select the BLE output (current profile)
-        B<n>   select BLE profile n, then the BLE output
-        ?      report state only
-      Every command answers with one line:
-        ZEN-HOS 1 <U|B> <profile> <ble-connected 0|1>
-      or ZEN-HOS 1 ERR when it was rejected (e.g. profile out of range).

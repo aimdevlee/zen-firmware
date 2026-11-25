@@ -17,6 +17,17 @@
     };
 };
 
+// Auto mouse layer (layer 1) guards against brushing the trackball while typing:
+// - require-prior-idle-ms: the layer only turns on once 400 ms have passed
+//   since the last keystroke (the cursor itself still moves right away).
+// - excluded-positions: pressing any other key turns the layer off at once.
+//   Listed keys keep it on: mouse-layer keys (7 8 9 18-22 32) and the
+//   modifiers used for Cmd/Shift/Option/Ctrl+click (12 24 37 40-43).
+&zip_temp_layer {
+    require-prior-idle-ms = <400>;
+    excluded-positions = <7 8 9 18 19 20 21 22 32 12 24 37 40 41 42 43>;
+};
+
 &zen_transform {
     col-offset = <7>;
 };

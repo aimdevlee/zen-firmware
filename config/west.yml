@@ -47,6 +47,6 @@ manifest:
     # driven by the GazeSwitch Mac app in the same repository.
     - name: zmk-gaze-switch
       remote: aimdevlee
-      revision: v0.1.0
+      revision: v0.3.0
   self:
     path: config
